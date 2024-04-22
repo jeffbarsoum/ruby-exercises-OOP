@@ -1,5 +1,4 @@
 class MyCar
-  # attr_writer :year, :color, :model
   attr_reader :speed, :started, :name
   attr_accessor :year, :color, :model
 
