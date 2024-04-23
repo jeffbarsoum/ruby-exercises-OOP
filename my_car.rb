@@ -2,6 +2,35 @@ class MyCar
   attr_reader :speed, :started, :name
   attr_accessor :year, :color, :model
 
+  @@car_inventory = {}
+
+  def self.calc_miles_per_gallon miles, gallons
+    miles_per_gallon = miles * 1.0 / gallons
+  end
+
+  def self.add_to_inventory attributes = {}
+    car_name = "#{attributes[:year]} #{attributes[:color]} #{attributes[:model]}".to_sym
+    is_car_exists = !!@@car_inventory[car_name]
+    is_car_count_exists = is_car_exists && @@car_inventory[car_name][:count].is_a?(Integer)
+    car_exists = is_car_exists && is_car_count_exists
+    @@car_inventory[car_name][:count] += 1 if car_exists
+    @@car_inventory[car_name] = { count: 1, attributes: attributes } unless car_exists
+    puts @@car_inventory
+  end
+
+  def self.remove_from_inventory name
+    car = @@car_inventory[name]
+    return unless car
+    @@car_inventory[name][:count] -= 1
+    @@car_inventory.delete name if @@car_inventory[name][:count] = 0
+    puts @@car_inventory
+  end
+
+  def self.clean_inventory
+    @@car_inventory = {}
+  end
+
+
   def initialize year, color, model
     err = <<-STRING
     What kind of car tho??
@@ -9,14 +38,22 @@ class MyCar
 
     STRING
 
-    return print err  unless :year && :color && :model
-    @speed = 0
-    @started = false
-    @year = year
-    @color = color
-    @model = model
-    @name = "#{self.year} #{self.color} #{self.model}"
+
+
+    # @speed = 0
+    # @started = false
+    # @year = year
+    # @color = color
+    # @model = model
+    # @name = "#{self.year} #{self.color} #{self.model}"
+
+    # attributes = {year: @year, color: @color, model: @model}
+    # self.class.add_to_inventory attributes
+    get_new_car year, color, model
+
   end
+
+
 
   def get_new_car year, color, model
     err = <<-STRING
@@ -26,14 +63,20 @@ class MyCar
     Change it up, be different!
 
     STRING
+    puts "#{self.year}"
+    puts "#{self.color}"
+    puts "#{self.model}"
     same_car = year == self.year && color == self.color && model = self.model
     puts err if same_car
     return if same_car
 
-    self.year = year unless year == self.year
-    self.color = color unless color == self.color
-    self.model = model unless model == self.model
-    self.name = "#{self.year} #{self.color} #{self.model}"
+    @speed = 0
+    @started = false
+    @year = year unless year == self.year
+    @color = color unless color == self.color
+    @model = model unless model == self.model
+    @name = "#{self.year} #{self.color} #{self.model}"
+    self.class.add_to_inventory year: self.year, color: self.color, model: self.model
     puts "Congrats on your new #{self.name}!"
   end
 
@@ -47,7 +90,9 @@ class MyCar
     STRING
     puts err if color == self.color
     return if color == self.color
+    self.class.remove_from_inventory self.name.to_sym
     self.color = color
+    self.class.add_to_inventory year: self.year, color: self.color, model: self.model
     self.name = "#{self.year} #{self.color} #{self.model}"
     puts "Ohh, #{self.color}, huh? Bold!"
   end
@@ -87,6 +132,10 @@ class MyCar
     return puts "Car already stopped! Zzz..."
   end
 
+  def to_s
+    puts "#{self.name}"
+  end
+
   private
 
   def started=(s)
@@ -105,6 +154,7 @@ end
 
 
 
+  car = MyCar.new '2010', 'Blue', 'Honda'
   car = MyCar.new '2010', 'Blue', 'Honda'
   car.color
   car.speed
@@ -139,3 +189,6 @@ end
   car.year
   car.color
   car.model
+  MyCar.clean_inventory
+  MyCar.calc_miles_per_gallon 400, 15
+  puts "#{car}"
